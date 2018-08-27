@@ -13,7 +13,7 @@ _VERSION = 1  # API version
 def main():
     return render_template('index.html')
 
-
+# TODO Support non JPG via Pillow.  Heck, why JPG? Tesseract isn't JPG native, is it? Good Grief!
 @app.route('/v{}/ocr'.format(_VERSION), methods=["POST"])
 def ocr():
     try:
