@@ -2,7 +2,7 @@ import pytesseract
 import requests
 from PIL import Image
 from PIL import ImageFilter
-from StringIO import StringIO
+from io import BytesIO
 
 
 def process_image(url):
@@ -12,4 +12,4 @@ def process_image(url):
 
 
 def _get_image(url):
-    return Image.open(StringIO(requests.get(url).content))
+    return Image.open(BytesIO(requests.get(url).content))

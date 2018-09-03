@@ -9,7 +9,7 @@ def get_image(url):
     return Image.open(BytesIO(requests.get(url).content))
 
 def std_print(s, end="\n"):
-    sys.stdout.write("{}{}".format(s,end))
+    sys.stdout.write("{}{}".format(s, end))
 
 
 if __name__ == '__main__':
