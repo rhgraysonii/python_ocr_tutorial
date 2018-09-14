@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+
 import sys
-import requests
 import pytesseract
 from PIL import Image
 from io import BytesIO
+from localfile import session     # Ensure requests.get() handles local files.
 
 def get_image(url):
-    return Image.open(BytesIO(requests.get(url).content))
+    return Image.open(BytesIO(session.get(url).content))
 
 def std_print(s, end="\n"):
     sys.stdout.write("{}{}".format(s, end))

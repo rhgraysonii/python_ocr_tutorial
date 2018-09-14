@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import logging
 from logging import Formatter, FileHandler
@@ -14,8 +16,11 @@ _VERSION = 1  # API version
 def main():
     return render_template('index.html')
 
+
 @app.route('/v{}/ocr'.format(_VERSION), methods=["POST"])
 def ocr():
+
+    # Read the URL
     try:
         url = request.get_json()['image_url']
     except TypeError:
@@ -46,9 +51,8 @@ def ocr():
             {"error": "Unknown processing image.",
              "request": request.data}
         )
-    else:
-        app.logger.info(output.encode('utf-8'))
-        return jsonify({"output": output})
+    app.logger.info(output)
+    return jsonify({"output": output})
 
 
 @app.errorhandler(500)

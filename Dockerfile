@@ -29,6 +29,8 @@ WORKDIR /flask_server
 
 # Make debconf interactive in the running container
 ENV DEBIAN_FRONTEND teletype
+
+# Set useful ENV vars
 ENV PYTHONIOENCODING "utf-8"
 
 # Try to forward request and error logs to docker log collector
