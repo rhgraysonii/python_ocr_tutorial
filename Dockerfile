@@ -1,61 +1,43 @@
 # start with a base image
-FROM ubuntu:14.04
+FROM tesseractshadow/tesseract4re
 
-# install dependencies
-RUN apt-get update
-RUN apt-get install -y autoconf automake libtool
-RUN apt-get install -y libpng12-dev
-RUN apt-get install -y libjpeg62-dev
-RUN apt-get install -y g++
-RUN apt-get install -y libtiff4-dev
-RUN apt-get install -y libopencv-dev libtesseract-dev
-RUN apt-get install -y git
-RUN apt-get install -y cmake
-RUN apt-get install -y build-essential
-RUN apt-get install -y libleptonica-dev
-RUN apt-get install -y liblog4cplus-dev
-RUN apt-get install -y libcurl3-dev
-RUN apt-get install -y python2.7-dev
-RUN apt-get install -y tk8.5 tcl8.5 tk8.5-dev tcl8.5-dev
-RUN apt-get build-dep -y python-imaging --fix-missing
-RUN apt-get install -y imagemagick
-RUN apt-get install -y wget
-RUN apt-get install -y python python-pip
+# Turn off debconf messages during build
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM linux
 
-# build leptonica
-RUN wget http://www.leptonica.org/source/leptonica-1.70.tar.gz
-RUN tar -zxvf leptonica-1.70.tar.gz
-WORKDIR leptonica-1.70/
-RUN ./autobuild
-RUN ./configure
-RUN make
-RUN make install
-RUN ldconfig
-WORKDIR /
-RUN ls
+# Install system dependencies
+# Docker says run apt-get update and install together,
+# and then rm /var/lib/apt/lists to reduce image size.
+RUN apt-get update && apt-get install -y \
+    python3-pil \
+    python3-requests \
+    python3-pip \
+ && rm -rf /var/lib/apt/lists/*
 
-ADD requirements.txt /
-RUN pip install -r requirements.txt
+RUN pip3 install --upgrade pip
 
-# build tesseract
-RUN wget https://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz
-RUN tar -zxvf tesseract-ocr-3.02.02.tar.gz
-WORKDIR tesseract-ocr/
-RUN ./autogen.sh
-RUN ./configure
-RUN make
-RUN make install
-RUN ldconfig
-RUN cd ..
 
-# download the relevant Tesseract English Language Packages
-RUN wget https://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.eng.tar.gz
-RUN tar -xf tesseract-ocr-3.02.eng.tar.gz
-RUN sudo cp -r tesseract-ocr/tessdata /usr/local/share/
+# Add requirements.txt before rest of repo, for caching
+COPY requirements.txt /
+RUN pip3 install -r /requirements.txt
+
 
 # update working directories
-ADD ./flask_server /flask_server
+# ADD . /app
+COPY ./flask_server /flask_server
 WORKDIR /flask_server
 
+# Make debconf interactive in the running container
+ENV DEBIAN_FRONTEND teletype
+
+# Set useful ENV vars
+ENV PYTHONIOENCODING "utf-8"
+
+# Try to forward request and error logs to docker log collector
+# Not sure this works. Use /var/log/nginx/* if running nginx.
+RUN ln -sf /dev/stdout /var/log/access.log \
+	&& ln -sf /dev/stderr /var/log/error.log
+
+# Expose and run
 EXPOSE 80
-CMD ["python", "app.py"]
+CMD ["python3", "app.py"]

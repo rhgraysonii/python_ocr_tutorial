@@ -1,29 +1,34 @@
+# -*- coding: utf-8 -*-
+
 import sys
-import requests
 import pytesseract
 from PIL import Image
-from StringIO import StringIO
-
+from io import BytesIO
+from localfile import session     # Ensure requests.get() handles local files.
 
 def get_image(url):
-    return Image.open(StringIO(requests.get(url).content))
+    return Image.open(BytesIO(session.get(url).content))
+
+def std_print(s, end="\n"):
+    sys.stdout.write("{}{}".format(s, end))
 
 
 if __name__ == '__main__':
     """Tool to test the raw output of pytesseract with a given input URL"""
-    sys.stdout.write("""
-===OOOO=====CCCCC===RRRRRR=====\n
-==OO==OO===CC=======RR===RR====\n
-==OO==OO===CC=======RR===RR====\n
-==OO==OO===CC=======RRRRRR=====\n
-==OO==OO===CC=======RR==RR=====\n
-==OO==OO===CC=======RR== RR====\n
-===OOOO=====CCCCC===RR====RR===\n\n
+
+    std_print("""
+===OOOO=====CCCCC===RRRRRR=====
+==OO==OO===CC=======RR===RR====
+==OO==OO===CC=======RR===RR====
+==OO==OO===CC=======RRRRRR=====
+==OO==OO===CC=======RR==RR=====
+==OO==OO===CC=======RR== RR====
+===OOOO=====CCCCC===RR====RR===
 """)
-    sys.stdout.write("A simple OCR utility\n")
-    url = raw_input("What is the url of the image you would like to analyze?\n")
+    std_print("A simple OCR utility")
+    url = input("What is the url of the image you would like to analyze?")
     image = get_image(url)
-    sys.stdout.write("The raw output from tesseract with no processing is:\n\n")
-    sys.stdout.write("-----------------BEGIN-----------------\n")
-    sys.stdout.write(pytesseract.image_to_string(image) + "\n")
-    sys.stdout.write("------------------END------------------\n")
+    std_print("The raw output from tesseract with no processing is:")
+    std_print("-----------------BEGIN-----------------")
+    std_print(pytesseract.image_to_string(image).encode('utf-8'))
+    std_print("------------------END------------------")

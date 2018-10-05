@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import pytesseract
-import requests
+from localfile import session
+
 from PIL import Image
 from PIL import ImageFilter
-from StringIO import StringIO
-
+from io import BytesIO
 
 def process_image(url):
     image = _get_image(url)
@@ -11,5 +13,5 @@ def process_image(url):
     return pytesseract.image_to_string(image)
 
 
-def _get_image(url):
-    return Image.open(StringIO(requests.get(url).content))
+def _get_image(url, session=session):
+    return Image.open(BytesIO(session.get(url).content))

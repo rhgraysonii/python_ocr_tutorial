@@ -23,8 +23,11 @@ $(function() {
         $("#retry").show()
         $("#results").show()
         $("#results").html("<h3>Image</h3><img src="+
-          value+" style='max-width: 400px;'><br><h3>Results</h3><div class='well'>"+
-          result["output"]+"</div>");
+          value+" style='max-width: 400px;'><br>"+
+          "<h3>Results</h3><div class='well'>"+
+          //encodeURIComponent(
+          result["output"] //)
+          +"</div>");
       },
       error: function(error) {
         console.log(error);

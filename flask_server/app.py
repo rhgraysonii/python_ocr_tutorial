@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import os
 import logging
 from logging import Formatter, FileHandler
 from flask import Flask, request, jsonify, render_template
+import json
 
 from ocr import process_image
 
@@ -16,27 +19,50 @@ def main():
 
 @app.route('/v{}/ocr'.format(_VERSION), methods=["POST"])
 def ocr():
+
+    # Read the URL
     try:
-        url = request.json['image_url']
-        if 'jpg' in url:
-            output = process_image(url)
-            return jsonify({"output": output})
-        else:
-            return jsonify({"error": "only .jpg files, please"})
+        url = request.get_json()['image_url']
+    except TypeError:
+        print("TypeError trying get_json(). Trying to load from string.")
+        try:
+            data = json.loads(request.data.decode('utf-8'), encoding='utf-8')
+            url = data['img_url']
+        except:
+            return jsonify(
+                {"error": "Could not get 'image_url' from the request object. Use JSON?",
+                 "data": request.data}
+            )
     except:
         return jsonify(
-            {"error": "Did you mean to send: {'image_url': 'some_jpeg_url'}"}
+            {"error": "Non-TypeError. Did you send {'image_url': 'http://.....'}",
+             "data": request.data }
         )
+
+    # Process the image
+    print("URL extracted:", url)
+    try:
+        output = process_image(url)
+    except OSError:
+        return jsonify({"error": "URL not recognized as image.",
+                        "url": url})
+    except:
+        return jsonify(
+            {"error": "Unknown processing image.",
+             "request": request.data}
+        )
+    app.logger.info(output)
+    return jsonify({"output": output})
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    print str(error)  # ghetto logging
+    print("*** 500 ***\n{}".format(str(error)))  # ghetto logging
 
 
 @app.errorhandler(404)
 def not_found_error(error):
-    print str(error)
+    print("*** 404 ***\n{}".format(str(error)))
 
 if not app.debug:
     file_handler = FileHandler('error.log')
@@ -52,4 +78,5 @@ if not app.debug:
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    print("Started app.py on port: {port}")
     app.run(host='0.0.0.0', port=port)
